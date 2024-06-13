@@ -39,6 +39,9 @@ importers:
       grpc_tools_node_protoc_ts:
         specifier: ^5.3.3
         version: 5.3.3
+      prettier:
+        specifier: ^3.3.2
+        version: 3.3.2
       ts-node-dev:
         specifier: ^2.0.0
         version: 2.0.0(@types/node@20.14.2)(typescript@5.4.5)
@@ -684,6 +687,11 @@ packages:
   picomatch@2.3.1:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
+
+  prettier@3.3.2:
+    resolution: {integrity: sha512-rAVeHYMcv8ATV5d508CFdn+8/pHPpXeIid1DdrPwXnaAdH7cqjVbpJaT5eq4yRAFU/lsbwYwSF/n5iNrdJHPQA==}
+    engines: {node: '>=14'}
+    hasBin: true
 
   protobufjs@7.3.2:
     resolution: {integrity: sha512-RXyHaACeqXeqAKGLDl68rQKbmObRsTIn4TYVUUug1KfS47YWCo5MacGITEryugIgZqORCvJWEk4l449POg5Txg==}
@@ -1581,6 +1589,8 @@ snapshots:
   path-to-regexp@0.1.7: {}
 
   picomatch@2.3.1: {}
+
+  prettier@3.3.2: {}
 
   protobufjs@7.3.2:
     dependencies:
