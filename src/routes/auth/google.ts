@@ -48,6 +48,7 @@ router.get("/callback", async (req: Request, res: Response) => {
         if (err) {
             res.status(500).json({error: err.message});
         }
-        res.json({token: response.getToken()});
+        res.cookie("token", response.getToken(), {httpOnly: false});
+        res.redirect(process.env.CLIENT_REDIRECT_AFTER_LOGIN as string)
     });
 });
