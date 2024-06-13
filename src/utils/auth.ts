@@ -1,9 +1,9 @@
-import jwksClient, { JwksClient, type SigningKey } from "jwks-rsa";
+import jwksClient, { JwksClient, type SigningKey } from 'jwks-rsa';
 import jwt, {
   type JwtHeader,
   type JwtPayload,
   type SigningKeyCallback,
-} from "jsonwebtoken";
+} from 'jsonwebtoken';
 
 export interface TokenResponse {
   access_token: string;
@@ -16,7 +16,7 @@ export interface TokenResponse {
 const validateIDTokenSignature = async (
   idToken: string,
 ): Promise<JwtPayload> => {
-  const jwksUrl = "https://www.googleapis.com/oauth2/v3/certs";
+  const jwksUrl = 'https://www.googleapis.com/oauth2/v3/certs';
 
   // create a jwks client
   const client: JwksClient = jwksClient({
@@ -41,7 +41,7 @@ const validateIDTokenSignature = async (
 };
 
 export const getIDTokenIssuerOptions = (): string[] => {
-  return "https://accounts.google.com,accounts.google.com".split(",");
+  return 'https://accounts.google.com,accounts.google.com'.split(',');
 };
 
 export const verifyIDToken = async (idToken: string): Promise<JwtPayload> => {
@@ -50,21 +50,21 @@ export const verifyIDToken = async (idToken: string): Promise<JwtPayload> => {
 
   // verify the issuer claim
   const idTokenIssuerOptions = getIDTokenIssuerOptions();
-  if (!idTokenIssuerOptions.includes(payload?.iss ?? "")) {
-    throw new Error("Invalid ID token issuer");
+  if (!idTokenIssuerOptions.includes(payload?.iss ?? '')) {
+    throw new Error('Invalid ID token issuer');
   }
 
   // verify the audience claim
   if (
     payload.aud !==
-    "879077169026-c59e4euiha84cjgbav67nl8fq29nbjs4.apps.googleusercontent.com"
+    '879077169026-c59e4euiha84cjgbav67nl8fq29nbjs4.apps.googleusercontent.com'
   ) {
-    throw new Error("Invalid ID token audience");
+    throw new Error('Invalid ID token audience');
   }
 
   // verify the expiration time
   if ((payload?.exp ?? 0) < Math.floor(Date.now() / 1000)) {
-    throw new Error("ID token expired");
+    throw new Error('ID token expired');
   }
 
   return payload;
@@ -74,32 +74,32 @@ export const exchangeCodeWithTokens = async (
   code: string,
 ): Promise<TokenResponse> => {
   // discover the google token endpoint
-  const googleTokenEndpoint = "https://oauth2.googleapis.com/token";
+  const googleTokenEndpoint = 'https://oauth2.googleapis.com/token';
   // prepare the request body data to suite application/x-www-form-urlencoded
   const requestBody = new URLSearchParams();
   // append the required data
-  requestBody.append("code", code);
+  requestBody.append('code', code);
   requestBody.append(
-    "client_id",
-    "879077169026-c59e4euiha84cjgbav67nl8fq29nbjs4.apps.googleusercontent.com",
+    'client_id',
+    '879077169026-c59e4euiha84cjgbav67nl8fq29nbjs4.apps.googleusercontent.com',
   );
-  requestBody.append("client_secret", "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");
+  requestBody.append('client_secret', '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');
   requestBody.append(
-    "redirect_uri",
-    "http://localhost:5173/api/auth/google/callback",
+    'redirect_uri',
+    'http://localhost:5173/api/auth/google/callback',
   );
-  requestBody.append("grant_type", "authorization_code");
+  requestBody.append('grant_type', 'authorization_code');
 
   const tokenRequest = await fetch(googleTokenEndpoint.toString(), {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: requestBody,
   });
 
   if (!tokenRequest.ok) {
-    throw new Error("Failed to exchange code with tokens");
+    throw new Error('Failed to exchange code with tokens');
   }
 
   return await tokenRequest.json();

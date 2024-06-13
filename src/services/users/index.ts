@@ -1,8 +1,8 @@
 import {
   IUserManagerClient,
   UserManagerClient,
-} from "../../protobufs/users-management-service/users-management_grpc_pb";
-import { credentials } from "@grpc/grpc-js";
+} from '../../protobufs/users-management-service/users-management_grpc_pb';
+import { credentials } from '@grpc/grpc-js';
 
 export class UserManagementClient {
   private static instance: IUserManagerClient;
@@ -10,7 +10,7 @@ export class UserManagementClient {
   private constructor() {
     // Create a new client
     UserManagementClient.instance = new UserManagerClient(
-      "localhost:50051",
+      'localhost:50051',
       credentials.createInsecure(),
     );
   }
