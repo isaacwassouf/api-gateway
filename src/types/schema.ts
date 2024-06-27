@@ -6,6 +6,15 @@ export interface ColumnDetails {
   isUnique: boolean;
 }
 
+export interface ForeignKeyDetails {
+  columnName: string;
+  referenceTableName: string;
+  referenceColumnName: string;
+  onUpdate: string;
+  onDelete: string;
+}
+
 export interface ColumnsList {
   columnsList: ColumnDetails[];
+  foreignKeysList: ForeignKeyDetails[];
 }

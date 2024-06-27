@@ -1,6 +1,7 @@
 import {
   Column,
   IntegerColumnType,
+  ReferentialAction,
 } from '../protobufs/schema-service-protobutfs/schema-service_pb';
 
 // the columns type if a oneof field, we need to represent it as a string
@@ -40,4 +41,21 @@ export const getColumnType = (column: Column) => {
   }
 
   return 'unknown';
+};
+
+export const getReferenialActionFromEnum = (
+  action: ReferentialAction,
+): string => {
+  switch (action) {
+    case ReferentialAction.CASCADE:
+      return 'Cascade';
+    case ReferentialAction.RESTRICT:
+      return 'Restrict';
+    case ReferentialAction.SET_NULL:
+      return 'Set Null';
+    case ReferentialAction.NO_ACTION:
+      return 'No Action';
+    default:
+      return 'Unknown';
+  }
 };

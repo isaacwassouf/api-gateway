@@ -8,7 +8,7 @@ import {
   DropColumnRequest,
 } from '../../protobufs/schema-service-protobutfs/schema-service_pb';
 import { ColumnsList } from '../../types/schema';
-import { getColumnType } from '../../utils/schema';
+import { getColumnType, getReferenialActionFromEnum } from '../../utils/schema';
 
 // Create a new router
 export const router = express.Router();
@@ -56,6 +56,7 @@ router.get('/tables/:tableName/columns', (req: Request, res: Response) => {
 
       const result: ColumnsList = {
         columnsList: [],
+        foreignKeysList: [],
       };
 
       response.getColumnsList().forEach((column) => {
@@ -65,6 +66,16 @@ router.get('/tables/:tableName/columns', (req: Request, res: Response) => {
           columnDefault: column.getDefaultValue(),
           isNotNullable: column.getNotNullable(),
           isUnique: column.getIsUnique(),
+        });
+      });
+
+      response.getForeignKeysList().forEach((foreignKey) => {
+        result.foreignKeysList.push({
+          columnName: foreignKey.getColumnName(),
+          referenceTableName: foreignKey.getReferenceTableName(),
+          referenceColumnName: foreignKey.getReferenceColumnName(),
+          onUpdate: getReferenialActionFromEnum(foreignKey.getOnUpdate()),
+          onDelete: getReferenialActionFromEnum(foreignKey.getOnDelete()),
         });
       });
 
