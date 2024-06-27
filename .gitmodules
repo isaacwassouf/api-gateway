@@ -1,3 +1,6 @@
 [submodule "src/protobufs/users-management-service"]
 	path = src/protobufs/users-management-service
 	url = git@github.com:isaacwassouf/authentication-service-protobufs.git
+[submodule "src/protobufs/schema-service-protobutfs"]
+	path = src/protobufs/schema-service-protobutfs
+	url = git@github.com:isaacwassouf/schema-service-protobutfs.git
