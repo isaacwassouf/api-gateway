@@ -59,3 +59,20 @@ export const getReferenialActionFromEnum = (
       return 'Unknown';
   }
 };
+
+export const getReferenialActionFromString = (
+  action: string,
+): ReferentialAction => {
+  switch (action) {
+    case 'Cascade':
+      return ReferentialAction.CASCADE;
+    case 'Restrict':
+      return ReferentialAction.RESTRICT;
+    case 'Set Null':
+      return ReferentialAction.SET_NULL;
+    case 'No Action':
+      return ReferentialAction.NO_ACTION;
+    default:
+      return ReferentialAction.NO_ACTION;
+  }
+};

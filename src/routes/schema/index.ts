@@ -6,9 +6,15 @@ import {
   DropTableRequest,
   ListColumnsRequest,
   DropColumnRequest,
+  AddForeignKeyRequest,
+  ForeignKey,
 } from '../../protobufs/schema-service-protobutfs/schema-service_pb';
-import { ColumnsList } from '../../types/schema';
-import { getColumnType, getReferenialActionFromEnum } from '../../utils/schema';
+import { AddForeignKeyDetails, ColumnsList } from '../../types/schema';
+import {
+  getColumnType,
+  getReferenialActionFromEnum,
+  getReferenialActionFromString,
+} from '../../utils/schema';
 
 // Create a new router
 export const router = express.Router();
@@ -92,6 +98,47 @@ router.delete(
 
     SchemaManagementClient.getInstance().dropColumn(
       new DropColumnRequest().setTableName(tableName).setColumnName(columnName),
+      (error, response) => {
+        if (error) {
+          return res.status(500).json({ error: error.message });
+        }
+        return res.json(response.toObject());
+      },
+    );
+  },
+);
+
+router.post(
+  '/tables/:tableName/foreign-keys',
+  (req: Request, res: Response) => {
+    const addForeignKeyDetails: AddForeignKeyDetails = req.body;
+
+    // prepare the grpc request
+    const request = new AddForeignKeyRequest()
+      .setTableName(addForeignKeyDetails.tableName)
+      .setForeignKey(
+        new ForeignKey()
+          .setColumnName(addForeignKeyDetails.foriegnKeyDetails.columnName)
+          .setReferenceTableName(
+            addForeignKeyDetails.foriegnKeyDetails.referenceTableName,
+          )
+          .setReferenceColumnName(
+            addForeignKeyDetails.foriegnKeyDetails.referenceColumnName,
+          )
+          .setOnUpdate(
+            getReferenialActionFromString(
+              addForeignKeyDetails.foriegnKeyDetails.onUpdate,
+            ),
+          )
+          .setOnDelete(
+            getReferenialActionFromString(
+              addForeignKeyDetails.foriegnKeyDetails.onDelete,
+            ),
+          ),
+      );
+
+    SchemaManagementClient.getInstance().addForeignKey(
+      request,
       (error, response) => {
         if (error) {
           return res.status(500).json({ error: error.message });

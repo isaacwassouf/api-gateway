@@ -18,3 +18,9 @@ export interface ColumnsList {
   columnsList: ColumnDetails[];
   foreignKeysList: ForeignKeyDetails[];
 }
+
+export interface AddForeignKeyDetails {
+  tableName: string;
+  isNotNullable: boolean;
+  foriegnKeyDetails: ForeignKeyDetails;
+}
