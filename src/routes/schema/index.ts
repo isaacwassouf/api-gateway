@@ -8,6 +8,7 @@ import {
   DropColumnRequest,
   AddForeignKeyRequest,
   ForeignKey,
+  DropForeignKeyRequest,
 } from '../../protobufs/schema-service-protobutfs/schema-service_pb';
 import { AddForeignKeyDetails, ColumnsList } from '../../types/schema';
 import {
@@ -139,6 +140,26 @@ router.post(
 
     SchemaManagementClient.getInstance().addForeignKey(
       request,
+      (error, response) => {
+        if (error) {
+          return res.status(500).json({ error: error.message });
+        }
+        return res.json(response.toObject());
+      },
+    );
+  },
+);
+
+router.delete(
+  '/tables/:tableName/foreign-keys/:columnName',
+  (req: Request, res: Response) => {
+    const tableName = req.params.tableName;
+    const columnName = req.params.columnName;
+
+    SchemaManagementClient.getInstance().dropForeignKey(
+      new DropForeignKeyRequest()
+        .setTableName(tableName)
+        .setColumnName(columnName),
       (error, response) => {
         if (error) {
           return res.status(500).json({ error: error.message });
