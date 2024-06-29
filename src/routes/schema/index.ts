@@ -9,12 +9,19 @@ import {
   AddForeignKeyRequest,
   ForeignKey,
   DropForeignKeyRequest,
+  AddColumnRequest,
+  Column,
 } from '../../protobufs/schema-service-protobutfs/schema-service_pb';
-import { AddForeignKeyDetails, ColumnsList } from '../../types/schema';
+import {
+  AddForeignKeyDetails,
+  ColumnsList,
+  NewColumnDetails,
+} from '../../types/schema';
 import {
   getColumnType,
   getReferenialActionFromEnum,
   getReferenialActionFromString,
+  setColumnRequestType,
 } from '../../utils/schema';
 
 // Create a new router
@@ -169,3 +176,30 @@ router.delete(
     );
   },
 );
+
+router.post('/tables/:tableName/columns', (req: Request, res: Response) => {
+  const tableName = req.params.tableName;
+  const newColumnDetails: NewColumnDetails = req.body;
+
+  console.log(newColumnDetails);
+
+  const column = new Column();
+  column.setName(newColumnDetails.columnName);
+  // set the column type
+  setColumnRequestType(column, newColumnDetails);
+
+  column.setIsUnique(newColumnDetails.isUnique);
+  column.setNotNullable(newColumnDetails.isNotNullable);
+  column.setDefaultValue(newColumnDetails.columnDefault);
+
+  const request = new AddColumnRequest()
+    .setTableName(tableName)
+    .setColumn(column);
+
+  SchemaManagementClient.getInstance().addColumn(request, (error, response) => {
+    if (error) {
+      return res.status(500).json({ error: error.message });
+    }
+    return res.json(response.toObject());
+  });
+});

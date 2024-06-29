@@ -1,8 +1,12 @@
+import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import {
   Column,
+  IntegerColumn,
   IntegerColumnType,
   ReferentialAction,
+  VarCharColumn,
 } from '../protobufs/schema-service-protobutfs/schema-service_pb';
+import { NewColumnDetails } from '../types/schema';
 
 // the columns type if a oneof field, we need to represent it as a string
 export const getColumnType = (column: Column) => {
@@ -74,5 +78,76 @@ export const getReferenialActionFromString = (
       return ReferentialAction.NO_ACTION;
     default:
       return ReferentialAction.NO_ACTION;
+  }
+};
+
+export const setColumnRequestType = (
+  column: Column,
+  newColumnDetails: NewColumnDetails,
+) => {
+  if (newColumnDetails.columnType === 'uint16') {
+    return column.setIntColumn(
+      new IntegerColumn()
+        .setType(IntegerColumnType.SMALLINT)
+        .setIsUnsigned(true),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'int16') {
+    return column.setIntColumn(
+      new IntegerColumn().setType(IntegerColumnType.SMALLINT),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'uint24') {
+    return column.setIntColumn(
+      new IntegerColumn()
+        .setType(IntegerColumnType.MEDIUMINT)
+        .setIsUnsigned(true),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'int24') {
+    return column.setIntColumn(
+      new IntegerColumn().setType(IntegerColumnType.MEDIUMINT),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'uint32') {
+    return column.setIntColumn(
+      new IntegerColumn().setType(IntegerColumnType.INT).setIsUnsigned(true),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'int32') {
+    return column.setIntColumn(
+      new IntegerColumn().setType(IntegerColumnType.INT),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'uint64') {
+    return column.setIntColumn(
+      new IntegerColumn().setType(IntegerColumnType.BIGINT).setIsUnsigned(true),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'int64') {
+    return column.setIntColumn(
+      new IntegerColumn().setType(IntegerColumnType.BIGINT),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'varchar') {
+    return column.setVarcharColumn(
+      new VarCharColumn().setLength(newColumnDetails.columnLength),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'boolean') {
+    return column.setBoolColumn(new Empty());
+  }
+
+  if (newColumnDetails.columnType === 'timestamp') {
+    return column.setTimestampColumn(new Empty());
   }
 };

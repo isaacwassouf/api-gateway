@@ -24,3 +24,7 @@ export interface AddForeignKeyDetails {
   isNotNullable: boolean;
   foriegnKeyDetails: ForeignKeyDetails;
 }
+
+export interface NewColumnDetails extends ColumnDetails {
+  columnLength: number;
+}
