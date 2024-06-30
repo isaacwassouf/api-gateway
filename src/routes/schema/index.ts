@@ -1,4 +1,4 @@
-import express, { NextFunction } from 'express';
+import express from 'express';
 import { Request, Response } from 'express';
 import { SchemaManagementClient } from '../../services/schema';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';

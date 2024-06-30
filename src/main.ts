@@ -3,15 +3,17 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import express, { Express, Request, Response } from 'express';
-import cors, { CorsOptions } from 'cors';
+import cors from 'cors';
 import cookieParser from 'cookie-parser';
 
 // import the router from Google.ts
 import { router as googleRouter } from './routes/auth/google';
 import { router as schemaRouter } from './routes/schema';
+import { router as contentsRouter } from './routes/contents';
 
 import { UserManagementClient } from './services/users';
 import { SchemaManagementClient } from './services/schema';
+import { ContentManagementClient } from './services/contents';
 
 const server: Express = express();
 
@@ -37,6 +39,7 @@ server.use(
 // use the router
 server.use('/api/auth/google', googleRouter);
 server.use('/api/schema', schemaRouter);
+server.use('/api/contents', contentsRouter);
 
 server.get('/', (req: Request, res: Response) => {
   // log the cookies
@@ -49,6 +52,9 @@ server.listen(4000, () => {
   console.log('Server is running on http://localhost:4000');
   // initialize the schema management Client
   SchemaManagementClient.getInstance();
+
+  // initialize the contents management client
+  ContentManagementClient.getInstance();
 
   // initialize the user management client
   // UserManagementClient.getInstance();

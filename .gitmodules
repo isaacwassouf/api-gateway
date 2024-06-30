@@ -4,3 +4,6 @@
 [submodule "src/protobufs/schema-service-protobutfs"]
 	path = src/protobufs/schema-service-protobutfs
 	url = git@github.com:isaacwassouf/schema-service-protobutfs.git
+[submodule "src/protobufs/content-service-protobufs"]
+	path = src/protobufs/content-service-protobufs
+	url = git@github.com:isaacwassouf/content-service-protobufs.git
