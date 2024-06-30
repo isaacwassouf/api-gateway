@@ -28,3 +28,9 @@ export interface AddForeignKeyDetails {
 export interface NewColumnDetails extends ColumnDetails {
   columnLength: number;
 }
+
+export interface AddTableDetails {
+  tableName: string;
+  tableComment: string;
+  columns: NewColumnDetails[];
+}

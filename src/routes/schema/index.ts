@@ -11,11 +11,13 @@ import {
   DropForeignKeyRequest,
   AddColumnRequest,
   Column,
+  CreateTableRequest,
 } from '../../protobufs/schema-service-protobutfs/schema-service_pb';
 import {
   AddForeignKeyDetails,
   ColumnsList,
   NewColumnDetails,
+  AddTableDetails,
 } from '../../types/schema';
 import {
   getColumnType,
@@ -28,10 +30,35 @@ import {
 export const router = express.Router();
 
 router.post('/tables', (req: Request, res: Response) => {
-  const table = req.body;
-  console.log(table);
+  const table: AddTableDetails = req.body;
 
-  return res.sendStatus(200);
+  // preare the grpc request
+  const request = new CreateTableRequest()
+    .setTableName(table.tableName)
+    .setTableComment(table.tableComment);
+
+  table.columns.forEach((column) => {
+    const newColumn = new Column();
+    newColumn.setName(column.columnName);
+    // set the column type
+    setColumnRequestType(newColumn, column);
+
+    newColumn.setIsUnique(column.isUnique);
+    newColumn.setNotNullable(column.isNotNullable);
+    newColumn.setDefaultValue(column.columnDefault);
+
+    request.addColumns(newColumn);
+  });
+
+  SchemaManagementClient.getInstance().createTable(
+    request,
+    (error, response) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+      return res.json(response.toObject());
+    },
+  );
 });
 
 router.get('/tables', (_: Request, res: Response) => {
