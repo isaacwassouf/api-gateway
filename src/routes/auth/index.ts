@@ -5,6 +5,7 @@ import { UserManagementClient } from '../../services/users';
 import {
   DisableAuthProviderRequest,
   EnableAuthProviderRequest,
+  SetAuthProviderCredentialsRequest,
 } from '../../protobufs/users-management-service/users-management_pb';
 import { AuthProvider, AuthProvidersList } from '../../types/auth';
 
@@ -66,6 +67,30 @@ router.patch('/:id/disable', async (req: Request, res: Response) => {
 
   UserManagementClient.getInstance().disableAuthProvider(
     new DisableAuthProviderRequest().setAuthProviderId(parseInt(id)),
+    (error, response) => {
+      if (error) {
+        return res.status(500).json({ error: error.message });
+      }
+
+      return res.json({ message: response.getMessage() });
+    },
+  );
+});
+
+router.patch('/:id/credentials', async (req: Request, res: Response) => {
+  const { clientId, clientSecret } = req.body;
+
+  const id = req.params.id;
+
+  if (!id) {
+    return res.status(400).json({ error: 'Missing provider ID' });
+  }
+
+  UserManagementClient.getInstance().setAuthProviderCredentials(
+    new SetAuthProviderCredentialsRequest()
+      .setAuthProviderId(parseInt(id))
+      .setClientId(clientId)
+      .setClientSecret(clientSecret),
     (error, response) => {
       if (error) {
         return res.status(500).json({ error: error.message });
