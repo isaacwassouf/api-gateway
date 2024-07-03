@@ -11,10 +11,12 @@ import { router as authRouter } from './routes/auth';
 import { router as googleRouter } from './routes/auth/google';
 import { router as schemaRouter } from './routes/schema';
 import { router as contentsRouter } from './routes/contents';
+import { router as analyticsRouter } from './routes/analytics';
 
 import { UserManagementClient } from './services/users';
 import { SchemaManagementClient } from './services/schema';
 import { ContentManagementClient } from './services/contents';
+import { AnalyticsClient } from './services/analytics';
 
 const server: Express = express();
 
@@ -42,6 +44,7 @@ server.use('/api/auth/providers', authRouter);
 server.use('/api/auth/google', googleRouter);
 server.use('/api/schema', schemaRouter);
 server.use('/api/contents', contentsRouter);
+server.use('/api/analytics', analyticsRouter);
 
 server.get('/', (req: Request, res: Response) => {
   // log the cookies
@@ -60,4 +63,7 @@ server.listen(4000, () => {
 
   // initialize the user management client
   UserManagementClient.getInstance();
+
+  // initialize the analytics Client
+  AnalyticsClient.getInstance();
 });

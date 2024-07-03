@@ -7,3 +7,6 @@
 [submodule "src/protobufs/content-service-protobufs"]
 	path = src/protobufs/content-service-protobufs
 	url = git@github.com:isaacwassouf/content-service-protobufs.git
+[submodule "src/protobufs/analytics-service-protobufs"]
+	path = src/protobufs/analytics-service-protobufs
+	url = git@github.com:isaacwassouf/analytics-service-protobufs.git

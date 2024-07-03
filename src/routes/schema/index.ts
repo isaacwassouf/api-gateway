@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { SchemaManagementClient } from '../../services/schema';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
@@ -25,109 +25,161 @@ import {
   getReferenialActionFromString,
   setColumnRequestType,
 } from '../../utils/schema';
+import { logger } from '../../middlewares';
 
 // Create a new router
 export const router = express.Router();
 
-router.post('/tables', (req: Request, res: Response) => {
-  const table: AddTableDetails = req.body;
+router.post(
+  '/tables',
+  (req: Request, res: Response, next: NextFunction) => {
+    const table: AddTableDetails = req.body;
 
-  // preare the grpc request
-  const request = new CreateTableRequest()
-    .setTableName(table.tableName)
-    .setTableComment(table.tableComment);
+    // preare the grpc request
+    const request = new CreateTableRequest()
+      .setTableName(table.tableName)
+      .setTableComment(table.tableComment);
 
-  table.columns.forEach((column) => {
-    const newColumn = new Column();
-    newColumn.setName(column.columnName);
-    // set the column type
-    setColumnRequestType(newColumn, column);
+    table.columns.forEach((column) => {
+      const newColumn = new Column();
+      newColumn.setName(column.columnName);
+      // set the column type
+      setColumnRequestType(newColumn, column);
 
-    newColumn.setIsUnique(column.isUnique);
-    newColumn.setNotNullable(column.isNotNullable);
-    newColumn.setDefaultValue(column.columnDefault);
+      newColumn.setIsUnique(column.isUnique);
+      newColumn.setNotNullable(column.isNotNullable);
+      newColumn.setDefaultValue(column.columnDefault);
 
-    request.addColumns(newColumn);
-  });
+      request.addColumns(newColumn);
+    });
 
-  SchemaManagementClient.getInstance().createTable(
-    request,
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
-      return res.json(response.toObject());
-    },
-  );
-});
+    SchemaManagementClient.getInstance().createTable(
+      request,
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json(response.toObject());
 
-router.get('/tables', (_: Request, res: Response) => {
-  SchemaManagementClient.getInstance().listTables(
-    new Empty(),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
-      return res.json(response.toObject());
-    },
-  );
-});
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Table created successfully';
+        }
 
-router.delete('/tables/:tableName', (req: Request, res: Response) => {
-  const tableName = req.params.tableName;
-  SchemaManagementClient.getInstance().dropTable(
-    new DropTableRequest().setTableName(tableName),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
-      return res.json(response.toObject());
-    },
-  );
-});
+        next();
+      },
+    );
+  },
+  logger,
+);
 
-router.get('/tables/:tableName/columns', (req: Request, res: Response) => {
-  const tableName = req.params.tableName;
-  SchemaManagementClient.getInstance().listColumns(
-    new ListColumnsRequest().setTableName(tableName),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
+router.get(
+  '/tables',
+  (req: Request, res: Response, next: NextFunction) => {
+    SchemaManagementClient.getInstance().listTables(
+      new Empty(),
+      (error, response) => {
+        if (error) {
+          // return the error
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          // return the response
+          res.json(response.toObject());
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Tables listed successfully';
+        }
 
-      const result: ColumnsList = {
-        columnsList: [],
-        foreignKeysList: [],
-      };
+        next();
+      },
+    );
+  },
+  logger,
+);
 
-      response.getColumnsList().forEach((column) => {
-        result.columnsList.push({
-          columnName: column.getName(),
-          columnType: getColumnType(column),
-          columnDefault: column.getDefaultValue(),
-          isNotNullable: column.getNotNullable(),
-          isUnique: column.getIsUnique(),
-        });
-      });
+router.delete(
+  '/tables/:tableName',
+  (req: Request, res: Response, next: NextFunction) => {
+    const tableName = req.params.tableName;
+    SchemaManagementClient.getInstance().dropTable(
+      new DropTableRequest().setTableName(tableName),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json(response.toObject());
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Table dropped successfully';
+        }
 
-      response.getForeignKeysList().forEach((foreignKey) => {
-        result.foreignKeysList.push({
-          columnName: foreignKey.getColumnName(),
-          referenceTableName: foreignKey.getReferenceTableName(),
-          referenceColumnName: foreignKey.getReferenceColumnName(),
-          onUpdate: getReferenialActionFromEnum(foreignKey.getOnUpdate()),
-          onDelete: getReferenialActionFromEnum(foreignKey.getOnDelete()),
-        });
-      });
+        next();
+      },
+    );
+  },
+  logger,
+);
 
-      return res.json(result);
-    },
-  );
-});
+router.get(
+  '/tables/:tableName/columns',
+  (req: Request, res: Response, next: NextFunction) => {
+    const tableName = req.params.tableName;
+    SchemaManagementClient.getInstance().listColumns(
+      new ListColumnsRequest().setTableName(tableName),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          const result: ColumnsList = {
+            columnsList: [],
+            foreignKeysList: [],
+          };
+
+          response.getColumnsList().forEach((column) => {
+            result.columnsList.push({
+              columnName: column.getName(),
+              columnType: getColumnType(column),
+              columnDefault: column.getDefaultValue(),
+              isNotNullable: column.getNotNullable(),
+              isUnique: column.getIsUnique(),
+            });
+          });
+
+          response.getForeignKeysList().forEach((foreignKey) => {
+            result.foreignKeysList.push({
+              columnName: foreignKey.getColumnName(),
+              referenceTableName: foreignKey.getReferenceTableName(),
+              referenceColumnName: foreignKey.getReferenceColumnName(),
+              onUpdate: getReferenialActionFromEnum(foreignKey.getOnUpdate()),
+              onDelete: getReferenialActionFromEnum(foreignKey.getOnDelete()),
+            });
+          });
+
+          res.json(result);
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Columns listed successfully';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
 
 router.delete(
   '/tables/:tableName/columns/:columnName',
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     const columnName = req.params.columnName;
 
@@ -135,17 +187,26 @@ router.delete(
       new DropColumnRequest().setTableName(tableName).setColumnName(columnName),
       (error, response) => {
         if (error) {
-          return res.status(500).json({ error: error.message });
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json(response.toObject());
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Column dropped successfully';
         }
-        return res.json(response.toObject());
+
+        next();
       },
     );
   },
+  logger,
 );
 
 router.post(
   '/tables/:tableName/foreign-keys',
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const addForeignKeyDetails: AddForeignKeyDetails = req.body;
 
     // prepare the grpc request
@@ -176,17 +237,26 @@ router.post(
       request,
       (error, response) => {
         if (error) {
-          return res.status(500).json({ error: error.message });
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json(response.toObject());
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Foreign key added successfully';
         }
-        return res.json(response.toObject());
+
+        next();
       },
     );
   },
+  logger,
 );
 
 router.delete(
   '/tables/:tableName/foreign-keys/:columnName',
-  (req: Request, res: Response) => {
+  (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     const columnName = req.params.columnName;
 
@@ -196,37 +266,62 @@ router.delete(
         .setColumnName(columnName),
       (error, response) => {
         if (error) {
-          return res.status(500).json({ error: error.message });
+          res.status(500).json({ error: error.message });
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json(response.toObject());
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Foreign key dropped successfully';
         }
-        return res.json(response.toObject());
+
+        next();
       },
     );
   },
+  logger,
 );
 
-router.post('/tables/:tableName/columns', (req: Request, res: Response) => {
-  const tableName = req.params.tableName;
-  const newColumnDetails: NewColumnDetails = req.body;
+router.post(
+  '/tables/:tableName/columns',
+  (req: Request, res: Response, next: NextFunction) => {
+    const tableName = req.params.tableName;
+    const newColumnDetails: NewColumnDetails = req.body;
 
-  console.log(newColumnDetails);
+    const column = new Column();
+    column.setName(newColumnDetails.columnName);
+    // set the column type
+    setColumnRequestType(column, newColumnDetails);
 
-  const column = new Column();
-  column.setName(newColumnDetails.columnName);
-  // set the column type
-  setColumnRequestType(column, newColumnDetails);
+    column.setIsUnique(newColumnDetails.isUnique);
+    column.setNotNullable(newColumnDetails.isNotNullable);
+    column.setDefaultValue(newColumnDetails.columnDefault);
 
-  column.setIsUnique(newColumnDetails.isUnique);
-  column.setNotNullable(newColumnDetails.isNotNullable);
-  column.setDefaultValue(newColumnDetails.columnDefault);
+    const request = new AddColumnRequest()
+      .setTableName(tableName)
+      .setColumn(column);
 
-  const request = new AddColumnRequest()
-    .setTableName(tableName)
-    .setColumn(column);
+    SchemaManagementClient.getInstance().addColumn(
+      request,
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
 
-  SchemaManagementClient.getInstance().addColumn(request, (error, response) => {
-    if (error) {
-      return res.status(500).json({ error: error.message });
-    }
-    return res.json(response.toObject());
-  });
-});
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json(response.toObject());
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Column added successfully';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);

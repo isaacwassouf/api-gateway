@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { UserManagementClient } from '../../services/users';
@@ -7,96 +7,149 @@ import {
   EnableAuthProviderRequest,
   SetAuthProviderCredentialsRequest,
 } from '../../protobufs/users-management-service/users-management_pb';
-import { AuthProvider, AuthProvidersList } from '../../types/auth';
+import { AuthProvidersList } from '../../types/auth';
+import { logger } from '../../middlewares';
 
 // Create a new router
 export const router = express.Router();
 
-router.get('/', async (req: Request, res: Response) => {
-  UserManagementClient.getInstance().listAuthProviders(
-    new Empty(),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
+router.get(
+  '/',
+  async (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().listAuthProviders(
+      new Empty(),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
 
-      const result = response.getAuthProvidersList();
-      const responseData: AuthProvidersList = {
-        authProviders: [],
-      };
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          const result = response.getAuthProvidersList();
+          const responseData: AuthProvidersList = {
+            authProviders: [],
+          };
 
-      result.forEach((provider) => {
-        responseData.authProviders.push({
-          id: provider.getId(),
-          name: provider.getName(),
-          active: provider.getActive(),
-          clientId: provider.getClientId(),
-        });
-      });
+          result.forEach((provider) => {
+            responseData.authProviders.push({
+              id: provider.getId(),
+              name: provider.getName(),
+              active: provider.getActive(),
+              clientId: provider.getClientId(),
+            });
+          });
 
-      return res.json(responseData);
-    },
-  );
-});
+          res.json(responseData);
 
-router.patch('/:id/enable', async (req: Request, res: Response) => {
-  const id = req.params.id;
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Auth providers listed successfully';
+        }
 
-  if (!id) {
-    return res.status(400).json({ error: 'Missing provider ID' });
-  }
+        next();
+      },
+    );
+  },
+  logger,
+);
 
-  UserManagementClient.getInstance().enableAuthProvider(
-    new EnableAuthProviderRequest().setAuthProviderId(parseInt(id)),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
+router.patch(
+  '/:id/enable',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
 
-      return res.json({ message: response.getMessage() });
-    },
-  );
-});
+    if (!id) {
+      return res.status(400).json({ error: 'Missing provider ID' });
+    }
 
-router.patch('/:id/disable', async (req: Request, res: Response) => {
-  const id = req.params.id;
+    UserManagementClient.getInstance().enableAuthProvider(
+      new EnableAuthProviderRequest().setAuthProviderId(parseInt(id)),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
 
-  if (!id) {
-    return res.status(400).json({ error: 'Missing provider ID' });
-  }
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json({ message: response.getMessage() });
 
-  UserManagementClient.getInstance().disableAuthProvider(
-    new DisableAuthProviderRequest().setAuthProviderId(parseInt(id)),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Auth provider enabled successfully';
+        }
 
-      return res.json({ message: response.getMessage() });
-    },
-  );
-});
+        next();
+      },
+    );
+  },
+  logger,
+);
 
-router.patch('/:id/credentials', async (req: Request, res: Response) => {
-  const { clientId, clientSecret } = req.body;
+router.patch(
+  '/:id/disable',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const id = req.params.id;
 
-  const id = req.params.id;
+    if (!id) {
+      return res.status(400).json({ error: 'Missing provider ID' });
+    }
 
-  if (!id) {
-    return res.status(400).json({ error: 'Missing provider ID' });
-  }
+    UserManagementClient.getInstance().disableAuthProvider(
+      new DisableAuthProviderRequest().setAuthProviderId(parseInt(id)),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
 
-  UserManagementClient.getInstance().setAuthProviderCredentials(
-    new SetAuthProviderCredentialsRequest()
-      .setAuthProviderId(parseInt(id))
-      .setClientId(clientId)
-      .setClientSecret(clientSecret),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json({ message: response.getMessage() });
 
-      return res.json({ message: response.getMessage() });
-    },
-  );
-});
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Auth provider disabled successfully';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
+router.patch(
+  '/:id/credentials',
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { clientId, clientSecret } = req.body;
+
+    const id = req.params.id;
+
+    if (!id) {
+      return res.status(400).json({ error: 'Missing provider ID' });
+    }
+
+    UserManagementClient.getInstance().setAuthProviderCredentials(
+      new SetAuthProviderCredentialsRequest()
+        .setAuthProviderId(parseInt(id))
+        .setClientId(clientId)
+        .setClientSecret(clientSecret),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
+
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage =
+            'Auth Provider credentials set successfully';
+        }
+
+        next();
+      },
+    );
+  },
+);
