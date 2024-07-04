@@ -17,7 +17,6 @@ export const log = async (logRequest: LogRequest) => {
 };
 
 export const getServicNameFromRequest = (request: Request): string => {
-  console.log(request.originalUrl);
   if (request.originalUrl.startsWith('/api/schema')) {
     return 'schema-service';
   }

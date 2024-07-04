@@ -12,6 +12,7 @@ import { router as googleRouter } from './routes/auth/google';
 import { router as schemaRouter } from './routes/schema';
 import { router as contentsRouter } from './routes/contents';
 import { router as analyticsRouter } from './routes/analytics';
+import { router as adminRouter } from './routes/auth/admin';
 
 import { UserManagementClient } from './services/users';
 import { SchemaManagementClient } from './services/schema';
@@ -25,6 +26,12 @@ server.use(express.json());
 
 // use the cookie parser middleware
 server.use(cookieParser());
+
+server.use((req, res, next) => {
+  console.log(req.cookies);
+  next();
+});
+
 // use the cors middleware
 const whitelist = [process.env.DASHBOARD_BASE_URL, process.env.CLIENT_BASE_URL];
 server.use(
@@ -41,17 +48,11 @@ server.use(
 );
 // use the router
 server.use('/api/auth/providers', authRouter);
+server.use('/api/auth/admin', adminRouter);
 server.use('/api/auth/google', googleRouter);
 server.use('/api/schema', schemaRouter);
 server.use('/api/contents', contentsRouter);
 server.use('/api/analytics', analyticsRouter);
-
-server.get('/', (req: Request, res: Response) => {
-  // log the cookies
-  console.log(req.cookies);
-  // send the cookies
-  res.json(req.cookies);
-});
 
 server.listen(4000, () => {
   console.log('Server is running on http://localhost:4000');
