@@ -74,3 +74,8 @@ router.post(
   },
   logger,
 );
+
+router.post('/logout', (req: Request, res: Response) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
+});
