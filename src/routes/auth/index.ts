@@ -6,8 +6,9 @@ import {
   DisableAuthProviderRequest,
   EnableAuthProviderRequest,
   SetAuthProviderCredentialsRequest,
+  User as UserProto,
 } from '../../protobufs/users-management-service/users-management_pb';
-import { AuthProvidersList } from '../../types/auth';
+import { AuthProvidersList, User } from '../../types/auth';
 import { logger } from '../../middlewares';
 
 // Create a new router
@@ -152,4 +153,5 @@ router.patch(
       },
     );
   },
+  logger,
 );
