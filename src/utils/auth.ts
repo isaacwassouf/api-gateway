@@ -4,6 +4,8 @@ import jwt, {
   type JwtPayload,
   type SigningKeyCallback,
 } from 'jsonwebtoken';
+import { AuthProviderCredentials } from '../types/auth';
+import { getGitHubCredentials } from './services';
 
 export interface TokenResponse {
   access_token: string;
@@ -11,6 +13,12 @@ export interface TokenResponse {
   token_type: string;
   scope: string;
   id_token: string;
+}
+
+export interface GitHubTokenResponse {
+  access_token: string;
+  token_type: string;
+  scope: string;
 }
 
 const validateIDTokenSignature = async (
@@ -94,6 +102,42 @@ export const exchangeCodeWithTokens = async (
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: requestBody,
+  });
+
+  if (!tokenRequest.ok) {
+    throw new Error('Failed to exchange code with tokens');
+  }
+
+  return await tokenRequest.json();
+};
+
+export const exchangeGitHubCodeWithTokens = async (
+  code: string,
+): Promise<GitHubTokenResponse> => {
+  // discover the github token endpoint
+  const githubTokenEndpoint = 'https://github.com/login/oauth/access_token';
+
+  // get github credentials
+  const credentials: AuthProviderCredentials = await getGitHubCredentials();
+
+  // prepare the request body data to suite application/x-www-form-urlencoded
+  const requestBody = new URLSearchParams();
+  // append the required data
+  requestBody.append('code', code);
+  requestBody.append('client_id', credentials.clientId);
+  requestBody.append('client_secret', credentials.clientSecret);
+  requestBody.append(
+    'redirect_uri',
+    'http://localhost:4000/api/auth/github/callback',
+  );
+
+  const tokenRequest = await fetch(githubTokenEndpoint.toString(), {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
     },
     body: requestBody,
   });

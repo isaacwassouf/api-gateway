@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import { LogRequest } from '../protobufs/analytics-service-protobufs/analytics-service_pb';
 import { createLogEntry, log } from '../utils/analytics';
 
@@ -23,4 +23,17 @@ export const logger = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
   }
+};
+
+export const execludeRoutes = (
+  routes: string[],
+  middleware: RequestHandler,
+) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (routes.includes(req.path)) {
+      return next();
+    }
+
+    return middleware(req, res, next);
+  };
 };

@@ -29,3 +29,21 @@ export interface User {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface GitHubUserResponse {
+  [key: string]: any;
+  id: number;
+  name: string;
+}
+
+export interface GitHubEmailResponse {
+  email: string;
+  primary: boolean;
+  verified: boolean;
+  visibility: string;
+}
+
+export interface AuthProviderCredentials {
+  clientId: string;
+  clientSecret: string;
+}
