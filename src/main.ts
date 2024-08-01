@@ -16,11 +16,13 @@ import { router as analyticsRouter } from './routes/analytics';
 import { router as adminRouter } from './routes/auth/admin';
 import { router as usersRouter } from './routes/auth/users';
 import { router as gitHubRouter } from './routes/auth/github';
+import { router as emailsRouter } from './routes/emails';
 
 import { UserManagementClient } from './services/users';
 import { SchemaManagementClient } from './services/schema';
 import { ContentManagementClient } from './services/contents';
 import { AnalyticsClient } from './services/analytics';
+import { EmailManagementClient } from './services/email';
 
 const server: Express = express();
 
@@ -68,6 +70,7 @@ server.use('/api/auth/github', gitHubRouter);
 server.use('/api/schema', schemaRouter);
 server.use('/api/contents', contentsRouter);
 server.use('/api/analytics', analyticsRouter);
+server.use('/api/emails', emailsRouter);
 
 server.listen(4000, () => {
   console.log('Server is running on http://localhost:4000');
@@ -82,4 +85,7 @@ server.listen(4000, () => {
 
   // initialize the analytics Client
   AnalyticsClient.getInstance();
+
+  // initialize the email management Client
+  EmailManagementClient.getInstance();
 });

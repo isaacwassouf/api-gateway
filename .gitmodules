@@ -10,3 +10,6 @@
 [submodule "src/protobufs/analytics-service-protobufs"]
 	path = src/protobufs/analytics-service-protobufs
 	url = git@github.com:isaacwassouf/analytics-service-protobufs.git
+[submodule "src/protobufs/email-service-protobufs"]
+	path = src/protobufs/email-service-protobufs
+	url = git@github.com:isaacwassouf/email-service-protobufs.git

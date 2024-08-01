@@ -1,6 +1,5 @@
 import express from 'express';
 import { Request, Response } from 'express';
-import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { AnalyticsClient } from '../../services/analytics';
 import { LogsList } from '../../types/analytics';
 import { ListLogsRequest } from '../../protobufs/analytics-service-protobufs/analytics-service_pb';

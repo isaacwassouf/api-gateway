@@ -29,6 +29,10 @@ export const getServicNameFromRequest = (request: Request): string => {
     return 'auth-service';
   }
 
+  if (request.originalUrl.startsWith('/api/emails')) {
+    return 'email-service';
+  }
+
   return 'unknown-service';
 };
 
