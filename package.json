@@ -8,6 +8,7 @@
     "generate-schema-files": "./src/protobufs/generate-schema-files.sh",
     "generate-content-files": "./src/protobufs/generate-content-files.sh",
     "generate-analytics-files": "./src/protobufs/generate-analytics-files.sh",
+    "generate-email-files": "./src/protobufs/generate-email-files.sh",
     "dev": "ts-node-dev --respawn --transpile-only ./src/main.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "echo \"Error: no test specified\" && exit 1"

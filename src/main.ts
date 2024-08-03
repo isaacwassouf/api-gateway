@@ -17,6 +17,7 @@ import { router as adminRouter } from './routes/auth/admin';
 import { router as usersRouter } from './routes/auth/users';
 import { router as gitHubRouter } from './routes/auth/github';
 import { router as emailsRouter } from './routes/emails';
+import { router as MFARouter } from './routes/auth/mfa';
 
 import { UserManagementClient } from './services/users';
 import { SchemaManagementClient } from './services/schema';
@@ -65,6 +66,7 @@ server.use(
 server.use('/api/auth/providers', authRouter);
 server.use('/api/auth/users', usersRouter);
 server.use('/api/auth/admin', adminRouter);
+server.use('/api/auth/mfa', MFARouter);
 server.use('/api/auth/google', googleRouter);
 server.use('/api/auth/github', gitHubRouter);
 server.use('/api/schema', schemaRouter);
