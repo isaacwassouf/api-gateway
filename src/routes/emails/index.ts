@@ -15,6 +15,7 @@ import {
   setEmailTemplateSchema,
   setSMTPCredentialsSchema,
 } from '../../validation-schemas/email';
+import { ensureAdminAuthenticated } from '../../middlewares/auth';
 
 // Create a new router
 export const router = express.Router();
@@ -22,6 +23,7 @@ export const router = express.Router();
 // get the SMTP configuration
 router.get(
   '/smtp',
+  ensureAdminAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
     EmailManagementClient.getInstance().getSMTPCredentials(
       new Empty(),
@@ -49,6 +51,7 @@ router.get(
 // set the SMTP configuration
 router.post(
   '/smtp',
+  ensureAdminAuthenticated,
   validateData(setSMTPCredentialsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     // TODO:  check if the password is not empty
@@ -85,6 +88,7 @@ router.post(
 
 router.get(
   '/templates/:templateName',
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     const templateNameParam = req.params.templateName;
     let emailType: EmailType | null = null;
@@ -128,6 +132,7 @@ router.get(
 
 router.put(
   '/templates/:templateName',
+  ensureAdminAuthenticated,
   validateData(setEmailTemplateSchema),
   (req: Request, res: Response, next: NextFunction) => {
     const templateNameParam = req.params.templateName;

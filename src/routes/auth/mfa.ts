@@ -3,12 +3,14 @@ import { Request, Response } from 'express';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { UserManagementClient } from '../../services/users';
 import { logger } from '../../middlewares';
+import { ensureAdminAuthenticated } from '../../middlewares/auth';
 
 // Create a new router
 export const router = express.Router();
 
 router.patch(
   '/toggle',
+  ensureAdminAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
     UserManagementClient.getInstance().toggleMFA(
       new Empty(),

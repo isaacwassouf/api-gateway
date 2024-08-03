@@ -4,12 +4,14 @@ import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { ListContentRequest } from '../../protobufs/content-service-protobufs/content-service_pb';
 import { ContentManagementClient } from '../../services/contents';
 import { logger } from '../../middlewares';
+import { ensureAuthenticated } from '../../middlewares/auth';
 
 // Create a new router
 export const router = express.Router();
 
 router.get(
   '/tables/:tableName',
+  ensureAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
 

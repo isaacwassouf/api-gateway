@@ -3,36 +3,41 @@ import { Request, Response } from 'express';
 import { AnalyticsClient } from '../../services/analytics';
 import { LogsList } from '../../types/analytics';
 import { ListLogsRequest } from '../../protobufs/analytics-service-protobufs/analytics-service_pb';
+import { ensureAdminAuthenticated } from '../../middlewares/auth';
 
 // Create a new router
 export const router = express.Router();
 
-router.get('/', async (req: Request, res: Response) => {
-  const windowQuery = req.query.window;
-  const window = windowQuery ? parseInt(windowQuery.toString()) : 0;
+router.get(
+  '/',
+  ensureAdminAuthenticated,
+  async (req: Request, res: Response) => {
+    const windowQuery = req.query.window;
+    const window = windowQuery ? parseInt(windowQuery.toString()) : 0;
 
-  AnalyticsClient.getInstance().listLogs(
-    new ListLogsRequest().setWindow(window),
-    (error, response) => {
-      if (error) {
-        return res.status(500).json({ error: error.message });
-      }
+    AnalyticsClient.getInstance().listLogs(
+      new ListLogsRequest().setWindow(window),
+      (error, response) => {
+        if (error) {
+          return res.status(500).json({ error: error.message });
+        }
 
-      const logsList: LogsList = {
-        logs: [],
-      };
+        const logsList: LogsList = {
+          logs: [],
+        };
 
-      response.getLogsList().forEach((log) => {
-        logsList.logs.push({
-          service: log.getServiceName(),
-          level: log.getLevel(),
-          message: log.getResponseMessage(),
-          createdAt: log.getCreatedAt(),
-          metaData: log.getMetadata(),
+        response.getLogsList().forEach((log) => {
+          logsList.logs.push({
+            service: log.getServiceName(),
+            level: log.getLevel(),
+            message: log.getResponseMessage(),
+            createdAt: log.getCreatedAt(),
+            metaData: log.getMetadata(),
+          });
         });
-      });
 
-      return res.status(200).json(logsList);
-    },
-  );
-});
+        return res.status(200).json(logsList);
+      },
+    );
+  },
+);

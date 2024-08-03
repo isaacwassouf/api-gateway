@@ -12,6 +12,7 @@ import {
   loginAdminSchema,
   registerAdminSchema,
 } from '../../validation-schemas/admins';
+import { ensureAdminAuthenticated } from '../../middlewares/auth';
 
 // Create a new router
 export const router = express.Router();
@@ -65,7 +66,7 @@ router.post(
         // set the error in the locals
         res.locals.callError = err;
       } else {
-        res.cookie('token', response.getToken(), {
+        res.cookie('accessToken', response.getToken(), {
           httpOnly: true,
           path: '/',
           sameSite: 'lax',
@@ -82,7 +83,11 @@ router.post(
   logger,
 );
 
-router.post('/logout', (req: Request, res: Response) => {
-  res.clearCookie('token');
-  res.json({ message: 'Logged out successfully' });
-});
+router.post(
+  '/logout',
+  ensureAdminAuthenticated,
+  (req: Request, res: Response) => {
+    res.clearCookie('token');
+    res.json({ message: 'Logged out successfully' });
+  },
+);

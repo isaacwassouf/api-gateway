@@ -6,6 +6,13 @@ declare global {
       callError: ServiceError | null;
       callResponse: any;
       defaultMessage: string;
+      user:
+      | {
+        [key: string]: any;
+        id: string;
+        email: string;
+      }
+      | undefined;
     }
   }
 }

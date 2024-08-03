@@ -32,12 +32,14 @@ import {
   addColumnSchema,
   createTableSchema,
 } from '../../validation-schemas/schemas';
+import { ensureAdminAuthenticated } from '../../middlewares/auth';
 
 // Create a new router
 export const router = express.Router();
 
 router.post(
   '/tables',
+  ensureAdminAuthenticated,
   validateData(createTableSchema),
   (req: Request, res: Response, next: NextFunction) => {
     const table: AddTableDetails = req.body;
@@ -84,6 +86,7 @@ router.post(
 
 router.get(
   '/tables',
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     SchemaManagementClient.getInstance().listTables(
       new Empty(),
@@ -110,6 +113,7 @@ router.get(
 
 router.delete(
   '/tables/:tableName',
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     SchemaManagementClient.getInstance().dropTable(
@@ -135,6 +139,7 @@ router.delete(
 
 router.get(
   '/tables/:tableName/columns',
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     SchemaManagementClient.getInstance().listColumns(
@@ -186,6 +191,7 @@ router.get(
 
 router.delete(
   '/tables/:tableName/columns/:columnName',
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     const columnName = req.params.columnName;
@@ -213,6 +219,7 @@ router.delete(
 
 router.post(
   '/tables/:tableName/foreign-keys',
+  ensureAdminAuthenticated,
   validateData(addForeignKeySchema),
   (req: Request, res: Response, next: NextFunction) => {
     const addForeignKeyDetails: AddForeignKeyDetails = req.body;
@@ -264,6 +271,7 @@ router.post(
 
 router.delete(
   '/tables/:tableName/foreign-keys/:columnName',
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     const columnName = req.params.columnName;
@@ -294,6 +302,7 @@ router.delete(
 
 router.post(
   '/tables/:tableName/columns',
+  ensureAdminAuthenticated,
   validateData(addColumnSchema),
   (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
