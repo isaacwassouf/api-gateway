@@ -26,12 +26,19 @@ import {
   setColumnRequestType,
 } from '../../utils/schema';
 import { logger } from '../../middlewares';
+import { validateData } from '../../middlewares/validate-data';
+import {
+  addForeignKeySchema,
+  addColumnSchema,
+  createTableSchema,
+} from '../../validation-schemas/schemas';
 
 // Create a new router
 export const router = express.Router();
 
 router.post(
   '/tables',
+  validateData(createTableSchema),
   (req: Request, res: Response, next: NextFunction) => {
     const table: AddTableDetails = req.body;
 
@@ -206,6 +213,7 @@ router.delete(
 
 router.post(
   '/tables/:tableName/foreign-keys',
+  validateData(addForeignKeySchema),
   (req: Request, res: Response, next: NextFunction) => {
     const addForeignKeyDetails: AddForeignKeyDetails = req.body;
 
@@ -286,6 +294,7 @@ router.delete(
 
 router.post(
   '/tables/:tableName/columns',
+  validateData(addColumnSchema),
   (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     const newColumnDetails: NewColumnDetails = req.body;

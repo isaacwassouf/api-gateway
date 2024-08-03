@@ -10,6 +10,11 @@ import {
 import { logger } from '../../middlewares';
 import { EmailTemplate, EmailTemplateEnum, SMTPData } from '../../types/email';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
+import { validateData } from '../../middlewares/validate-data';
+import {
+  setEmailTemplateSchema,
+  setSMTPCredentialsSchema,
+} from '../../validation-schemas/email';
 
 // Create a new router
 export const router = express.Router();
@@ -44,6 +49,7 @@ router.get(
 // set the SMTP configuration
 router.post(
   '/smtp',
+  validateData(setSMTPCredentialsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     // TODO:  check if the password is not empty
     const smtpData: SMTPData = req.body;
@@ -122,6 +128,7 @@ router.get(
 
 router.put(
   '/templates/:templateName',
+  validateData(setEmailTemplateSchema),
   (req: Request, res: Response, next: NextFunction) => {
     const templateNameParam = req.params.templateName;
     const emailTemplate: EmailTemplate = req.body;

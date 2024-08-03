@@ -6,10 +6,11 @@ import {
   DisableAuthProviderRequest,
   EnableAuthProviderRequest,
   SetAuthProviderCredentialsRequest,
-  User as UserProto,
 } from '../../protobufs/users-management-service/users-management_pb';
-import { AuthProvidersList, User } from '../../types/auth';
+import { AuthProvidersList } from '../../types/auth';
 import { logger } from '../../middlewares';
+import { validateData } from '../../middlewares/validate-data';
+import { setAuthProviderCredentialsSchema } from '../../validation-schemas/auth';
 
 // Create a new router
 export const router = express.Router();
@@ -120,6 +121,7 @@ router.patch(
 
 router.patch(
   '/:id/credentials',
+  validateData(setAuthProviderCredentialsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const { clientId, clientSecret } = req.body;
 

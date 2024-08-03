@@ -7,12 +7,18 @@ import {
 } from '../../protobufs/users-management-service/users-management_pb';
 import { LoginAdminData, RegisterAdminData } from '../../types/auth';
 import { logger } from '../../middlewares';
+import { validateData } from '../../middlewares/validate-data';
+import {
+  loginAdminSchema,
+  registerAdminSchema,
+} from '../../validation-schemas/admins';
 
 // Create a new router
 export const router = express.Router();
 
 router.post(
   '/register',
+  validateData(registerAdminSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const data: RegisterAdminData = req.body;
 
@@ -45,6 +51,7 @@ router.post(
 
 router.post(
   '/login',
+  validateData(loginAdminSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     const data: LoginAdminData = req.body;
 
