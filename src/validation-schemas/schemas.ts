@@ -21,6 +21,8 @@ export const createTableSchema = Joi.object({
         columnLength: Joi.number().integer().required(),
         isNotNullable: Joi.boolean().required(),
         isUnique: Joi.boolean().required(),
+        columnPrecision: Joi.number().integer(),
+        columnScale: Joi.number().integer(),
       }),
     )
     .min(1)
@@ -40,6 +42,8 @@ export const addColumnSchema = Joi.object({
   columnLength: Joi.number().integer().required(),
   isNotNullable: Joi.boolean().required(),
   isUnique: Joi.boolean().required(),
+  columnPrecision: Joi.number().integer(),
+  columnScale: Joi.number().integer(),
 });
 
 export const addForeignKeySchema = Joi.object({

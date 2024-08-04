@@ -1,6 +1,9 @@
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import {
   Column,
+  DecimalColumn,
+  FixedPointColumn,
+  FixedPointColumnType,
   IntegerColumn,
   IntegerColumnType,
   ReferentialAction,
@@ -29,11 +32,36 @@ export const getColumnType = (column: Column) => {
     }
   }
 
+  if (column.hasDecimalColumn()) {
+    // get the precision and scale of the decimal column
+    const precision = column.getDecimalColumn()?.getPrecision();
+    const scale = column.getDecimalColumn()?.getScale();
+
+    return `decimal(${precision},${scale})`;
+  }
+
+  if (column.hasFixedPointColumn()) {
+    // get the precision of the fixed point column
+    const precision = column.getFixedPointColumn()?.getPrecision();
+
+    if (
+      column.getFixedPointColumn()?.getType() === FixedPointColumnType.FLOAT
+    ) {
+      return `float(${precision})`;
+    }
+
+    return `double(${precision})`;
+  }
+
   if (column.hasVarcharColumn()) {
     // get the length of the varchar column
     const length = column.getVarcharColumn()?.getLength() ?? '';
 
     return `varchar(${length})`;
+  }
+
+  if (column.hasTextColumn()) {
+    return 'text';
   }
 
   if (column.hasBoolColumn()) {
@@ -137,10 +165,38 @@ export const setColumnRequestType = (
     );
   }
 
+  if (newColumnDetails.columnType === 'decimal') {
+    return column.setDecimalColumn(
+      new DecimalColumn()
+        .setPrecision(newColumnDetails.columnPrecision)
+        .setScale(newColumnDetails.columnScale),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'float') {
+    return column.setFixedPointColumn(
+      new FixedPointColumn()
+        .setType(FixedPointColumnType.FLOAT)
+        .setPrecision(newColumnDetails.columnPrecision),
+    );
+  }
+
+  if (newColumnDetails.columnType === 'double') {
+    return column.setFixedPointColumn(
+      new FixedPointColumn()
+        .setType(FixedPointColumnType.DOUBLE)
+        .setPrecision(newColumnDetails.columnPrecision),
+    );
+  }
+
   if (newColumnDetails.columnType === 'varchar') {
     return column.setVarcharColumn(
       new VarCharColumn().setLength(newColumnDetails.columnLength),
     );
+  }
+
+  if (newColumnDetails.columnType === 'text') {
+    return column.setTextColumn(new Empty());
   }
 
   if (newColumnDetails.columnType === 'boolean') {

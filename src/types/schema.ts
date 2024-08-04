@@ -27,6 +27,8 @@ export interface AddForeignKeyDetails {
 
 export interface NewColumnDetails extends ColumnDetails {
   columnLength: number;
+  columnPrecision: number;
+  columnScale: number;
 }
 
 export interface AddTableDetails {
