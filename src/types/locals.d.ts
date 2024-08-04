@@ -9,7 +9,7 @@ declare global {
       user:
       | {
         [key: string]: any;
-        id: string;
+        id: number;
         email: string;
       }
       | undefined;
