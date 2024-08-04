@@ -1,7 +1,10 @@
 import Joi from 'joi';
 
 export const createTableSchema = Joi.object({
-  tableName: Joi.string().alphanum().required(),
+  tableName: Joi.string()
+    .regex(new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$'))
+    .disallow('users')
+    .required(),
   tableComment: Joi.string().alphanum().required().allow(''),
   columns: Joi.array()
     .items(
@@ -19,7 +22,9 @@ export const createTableSchema = Joi.object({
 });
 
 export const addColumnSchema = Joi.object({
-  columnName: Joi.string().alphanum().min(3).max(30).required(),
+  columnName: Joi.string()
+    .regex(new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$'))
+    .required(),
   columnType: Joi.string().alphanum().required(),
   columnDefault: Joi.string().alphanum().allow('').required(),
   columnLength: Joi.number().integer().required(),
@@ -31,7 +36,9 @@ export const addForeignKeySchema = Joi.object({
   tableName: Joi.string().alphanum().required(),
   isNotNullable: Joi.boolean().required(),
   foriegnKeyDetails: Joi.object({
-    columnName: Joi.string().alphanum().required(),
+    columnName: Joi.string()
+      .regex(new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$'))
+      .required(),
     referenceTableName: Joi.string().alphanum().required(),
     referenceColumnName: Joi.string().alphanum().required(),
     onUpdate: Joi.string().alphanum().required(),
