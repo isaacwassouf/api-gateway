@@ -1,6 +1,5 @@
 import express, { NextFunction } from 'express';
 import { Request, Response } from 'express';
-import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { ListContentRequest } from '../../protobufs/content-service-protobufs/content-service_pb';
 import { ContentManagementClient } from '../../services/contents';
 import { logger } from '../../middlewares';

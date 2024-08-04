@@ -9,7 +9,13 @@ export const createTableSchema = Joi.object({
   columns: Joi.array()
     .items(
       Joi.object({
-        columnName: Joi.string().alphanum().min(3).max(30).required(),
+        columnName: Joi.string()
+          .regex(new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$'))
+          .disallow('id')
+          .disallow('created_at')
+          .disallow('updated_at')
+          .disallow('creator_id')
+          .required(),
         columnType: Joi.string().alphanum().required(),
         columnDefault: Joi.string().alphanum().required().allow(''),
         columnLength: Joi.number().integer().required(),
@@ -24,6 +30,10 @@ export const createTableSchema = Joi.object({
 export const addColumnSchema = Joi.object({
   columnName: Joi.string()
     .regex(new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$'))
+    .disallow('id')
+    .disallow('created_at')
+    .disallow('updated_at')
+    .disallow('creator_id')
     .required(),
   columnType: Joi.string().alphanum().required(),
   columnDefault: Joi.string().alphanum().allow('').required(),
@@ -38,6 +48,10 @@ export const addForeignKeySchema = Joi.object({
   foriegnKeyDetails: Joi.object({
     columnName: Joi.string()
       .regex(new RegExp('^[a-zA-Z][a-zA-Z0-9_]*$'))
+      .disallow('id')
+      .disallow('created_at')
+      .disallow('updated_at')
+      .disallow('creator_id')
       .required(),
     referenceTableName: Joi.string().alphanum().required(),
     referenceColumnName: Joi.string().alphanum().required(),
