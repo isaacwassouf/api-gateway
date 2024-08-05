@@ -2,9 +2,16 @@ import express, { NextFunction } from 'express';
 import { Request, Response } from 'express';
 import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { UserManagementClient } from '../../services/users';
-import { User as UserProto } from '../../protobufs/users-management-service/users-management_pb';
+import {
+  ConfirmPasswordResetRequest,
+  RequestEmailVerificationRequest,
+  RequestPasswordResetRequest,
+  User as UserProto,
+  VerifyEmailRequest,
+} from '../../protobufs/users-management-service/users-management_pb';
 import { User } from '../../types/auth';
 import { ensureAuthenticated } from '../../middlewares/auth';
+import { logger } from '../../middlewares';
 
 // Create a new router
 export const router = express.Router();
@@ -42,4 +49,116 @@ router.get(
       next();
     });
   },
+);
+
+router.post(
+  '/request-email-verification',
+  ensureAuthenticated,
+  (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().requestEmailVerification(
+      new RequestEmailVerificationRequest().setEmail(req.body.email),
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage =
+            'Email verification request sent successfully';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
+router.post(
+  '/confirm-email-verification',
+  (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().verifyEmail(
+      new VerifyEmailRequest().setToken(req.body.code),
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage =
+            'Email verification successful. You can now login with your email.';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
+router.post(
+  '/request-password-reset',
+  (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().requestPasswordReset(
+      new RequestPasswordResetRequest().setEmail(req.body.email),
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage =
+            'Password reset request sent successfully';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
+router.post(
+  '/confirm-password-reset',
+  (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().confirmPasswordReset(
+      new ConfirmPasswordResetRequest()
+        .setCode(req.body.code)
+        .setPassword(req.body.password)
+        .setPasswordConfirmation(req.body.passwordConfirmation),
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage =
+            'Password reset successful. You can now login with your new password.';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
 );
