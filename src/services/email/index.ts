@@ -8,9 +8,11 @@ export class EmailManagementClient {
   private static instance: IEmailManagerClient;
 
   private constructor() {
+    const emailServiceHost = process.env.EMAIL_SERVICE_HOST || 'localhost';
+    const emailServicePort = process.env.EMAIL_SERVICE_PORT || '8080';
     // Create a new client
     EmailManagementClient.instance = new EmailManagerClient(
-      'localhost:8080',
+      `${emailServiceHost}:${emailServicePort}`,
       credentials.createInsecure(),
     );
   }

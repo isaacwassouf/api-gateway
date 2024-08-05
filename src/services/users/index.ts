@@ -8,9 +8,12 @@ export class UserManagementClient {
   private static instance: IUserManagerClient;
 
   private constructor() {
+    const userManagementServiceHost =
+      process.env.USERS_SERVICE_HOST || 'localhost';
+    const userManagementServicePort = process.env.USERS_SERVICE_PORT || '50051';
     // Create a new client
     UserManagementClient.instance = new UserManagerClient(
-      'localhost:50051',
+      `${userManagementServiceHost}:${userManagementServicePort}`,
       credentials.createInsecure(),
     );
   }

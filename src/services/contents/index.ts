@@ -8,9 +8,12 @@ export class ContentManagementClient {
   private static instance: IContentServiceClient;
 
   private constructor() {
+    const contentServiceHost = process.env.CONTENT_SERVICE_HOST || 'localhost';
+    const contentServicePort = process.env.CONTENT_SERVICE_PORT || '8085';
+
     // Create a new client
     ContentManagementClient.instance = new ContentServiceClient(
-      'localhost:8085',
+      `${contentServiceHost}:${contentServicePort}`,
       credentials.createInsecure(),
     );
   }

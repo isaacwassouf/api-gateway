@@ -8,9 +8,12 @@ export class SchemaManagementClient {
   private static instance: ISchemaServiceClient;
 
   private constructor() {
+    const schemaServiceHost = process.env.SCHEMA_SERVICE_HOST || 'localhost';
+    const schemaServicePort = process.env.SCHEMA_SERVICE_PORT || '8084';
+
     // Create a new client
     SchemaManagementClient.instance = new SchemaServiceClient(
-      'localhost:8084',
+      `${schemaServiceHost}:${schemaServicePort}`,
       credentials.createInsecure(),
     );
   }

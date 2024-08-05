@@ -8,9 +8,13 @@ export class AnalyticsClient {
   private static instance: IAnalyticsServiceClient;
 
   private constructor() {
+    const anayticsServiceHost =
+      process.env.ANALYTICS_SERVICE_HOST || 'localhost';
+    const analyticsServicePort = process.env.ANALYTICS_SERVICE_PORT || '8089';
+
     // Create a new client
     AnalyticsClient.instance = new AnalyticsServiceClient(
-      'localhost:8089',
+      `${anayticsServiceHost}:${analyticsServicePort}`,
       credentials.createInsecure(),
     );
   }
