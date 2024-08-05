@@ -4,6 +4,7 @@ import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { UserManagementClient } from '../../services/users';
 import {
   ConfirmPasswordResetRequest,
+  RegisterRequest,
   RequestEmailVerificationRequest,
   RequestPasswordResetRequest,
   User as UserProto,
@@ -49,6 +50,69 @@ router.get(
       next();
     });
   },
+);
+
+router.post(
+  '/register',
+  (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().registerUser(
+      new RegisterRequest()
+        .setName(req.body.name)
+        .setEmail(req.body.email)
+        .setPassword(req.body.password)
+        .setPasswordConfirmation(req.body.passwordConfirmation),
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage =
+            'User registered successfully. Please verify your email to login.';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
+router.post(
+  '/login',
+  (req: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().loginUser(
+      new RegisterRequest()
+        .setEmail(req.body.email)
+        .setPassword(req.body.password),
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          const token = response.getToken();
+          if (token) {
+            res.cookie('token', token, { httpOnly: true });
+          }
+          res.json({ message: response.getMessage() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Login request successful.';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
 );
 
 router.post(
