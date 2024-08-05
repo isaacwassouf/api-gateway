@@ -4,6 +4,7 @@ import { Empty } from 'google-protobuf/google/protobuf/empty_pb';
 import { UserManagementClient } from '../../services/users';
 import {
   ConfirmPasswordResetRequest,
+  LoginRequest,
   RegisterRequest,
   RequestEmailVerificationRequest,
   RequestPasswordResetRequest,
@@ -87,7 +88,7 @@ router.post(
   '/login',
   (req: Request, res: Response, next: NextFunction) => {
     UserManagementClient.getInstance().loginUser(
-      new RegisterRequest()
+      new LoginRequest()
         .setEmail(req.body.email)
         .setPassword(req.body.password),
       (err, response) => {
@@ -99,7 +100,11 @@ router.post(
         } else {
           const token = response.getToken();
           if (token) {
-            res.cookie('token', token, { httpOnly: true });
+            res.cookie('accessToken', response.getToken(), {
+              httpOnly: true,
+              path: '/',
+              sameSite: 'lax',
+            });
           }
           res.json({ message: response.getMessage() });
 
@@ -117,7 +122,6 @@ router.post(
 
 router.post(
   '/request-email-verification',
-  ensureAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     UserManagementClient.getInstance().requestEmailVerification(
       new RequestEmailVerificationRequest().setEmail(req.body.email),

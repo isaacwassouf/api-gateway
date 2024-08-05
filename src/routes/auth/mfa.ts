@@ -48,7 +48,11 @@ router.post(
           // set the error in the locals
           res.locals.callError = err;
         } else {
-          res.cookie('token', response.getToken(), { httpOnly: true });
+          res.cookie('accessToken', response.getToken(), {
+            httpOnly: true,
+            path: '/',
+            sameSite: 'lax',
+          });
           res.json({ message: 'MFA confirmed successfully' });
 
           // set the response in the locals
