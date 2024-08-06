@@ -66,11 +66,14 @@ router.post(
         // set the error in the locals
         res.locals.callError = err;
       } else {
+        const domain = process.env.DASHBOARD_COOKIE_DOMAIN;
         res.cookie('accessToken', response.getToken(), {
           httpOnly: true,
           path: '/',
           sameSite: 'lax',
+          domain: domain,
         });
+
         res.json({ message: response.getMessage() });
         // set the response in the locals
         res.locals.callResponse = response;

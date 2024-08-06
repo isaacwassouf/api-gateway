@@ -128,9 +128,14 @@ export const exchangeGitHubCodeWithTokens = async (
   requestBody.append('code', code);
   requestBody.append('client_id', credentials.clientId);
   requestBody.append('client_secret', credentials.clientSecret);
+
+  const apiGatewayURL = process.env.API_GATEWAY_URL;
+  if (!apiGatewayURL) {
+    throw new Error('API_GATEWAY_URL is not set');
+  }
   requestBody.append(
     'redirect_uri',
-    'http://localhost:4000/api/auth/github/callback',
+    `${apiGatewayURL}/api/auth/github/callback`,
   );
 
   const tokenRequest = await fetch(githubTokenEndpoint.toString(), {

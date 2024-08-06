@@ -28,52 +28,58 @@ router.get('/callback', async (req: Request, res: Response) => {
   // get the code from the request query
   const code = req.query.code;
 
-  // exchange the code for the access and ID tokens
-  const tokenResponse: GitHubTokenResponse = await exchangeGitHubCodeWithTokens(
-    code as string,
-  );
+  try {
+    // exchange the code for the access and ID tokens
+    const tokenResponse: GitHubTokenResponse =
+      await exchangeGitHubCodeWithTokens(code as string);
 
-  //  access the user data though the user endpoint
-  const userEndoint = 'https://api.github.com/user';
-  const userEmailEndpoint = 'https://api.github.com/user/emails';
+    //  access the user data though the user endpoint
+    const userEndoint = 'https://api.github.com/user';
+    const userEmailEndpoint = 'https://api.github.com/user/emails';
 
-  // send the two requests in parallel
-  const [userResponse, userEmailResponse] = await Promise.all([
-    fetch(userEndoint, {
-      headers: {
-        Authorization: `Bearer ${tokenResponse.access_token}`,
+    // send the two requests in parallel
+    const [userResponse, userEmailResponse] = await Promise.all([
+      fetch(userEndoint, {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.access_token}`,
+        },
+      }),
+      fetch(userEmailEndpoint, {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.access_token}`,
+        },
+      }),
+    ]);
+
+    // parse the responses
+    const userData: GitHubUserResponse = await userResponse.json();
+    const userEmailData: GitHubEmailResponse[] = await userEmailResponse.json();
+
+    console.log('userData', userData);
+    console.log(userEmailData, userEmailData);
+
+    // get the primary emails
+    const primaryEmail = userEmailData.find(
+      (email) => email.primary && email.visibility === 'public',
+    );
+
+    const githubLoginRequest: GitHubLoginRequest = new GitHubLoginRequest();
+    githubLoginRequest.setIdentifier(userData.id.toString());
+    githubLoginRequest.setName(userData.name);
+    githubLoginRequest.setEmail(primaryEmail?.email ?? '');
+
+    // handle the login request
+    UserManagementClient.getInstance().handleGitHubLogin(
+      githubLoginRequest,
+      (err, response) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.cookie('token', response.getToken(), { httpOnly: false });
+        res.redirect(process.env.CLIENT_REDIRECT_AFTER_LOGIN as string);
       },
-    }),
-    fetch(userEmailEndpoint, {
-      headers: {
-        Authorization: `Bearer ${tokenResponse.access_token}`,
-      },
-    }),
-  ]);
-
-  // parse the responses
-  const userData: GitHubUserResponse = await userResponse.json();
-  const userEmailData: GitHubEmailResponse[] = await userEmailResponse.json();
-
-  // get the primary emails
-  const primaryEmail = userEmailData.find(
-    (email) => email.primary && email.visibility === 'public',
-  );
-
-  const githubLoginRequest: GitHubLoginRequest = new GitHubLoginRequest();
-  githubLoginRequest.setIdentifier(userData.id.toString());
-  githubLoginRequest.setName(userData.name);
-  githubLoginRequest.setEmail(primaryEmail?.email ?? '');
-
-  // handle the login request
-  UserManagementClient.getInstance().handleGitHubLogin(
-    githubLoginRequest,
-    (err, response) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.cookie('token', response.getToken(), { httpOnly: false });
-      res.redirect(process.env.CLIENT_REDIRECT_AFTER_LOGIN as string);
-    },
-  );
+    );
+  } catch (err) {
+    return res.status(500).json({ error: 'error processing github request' });
+  }
 });

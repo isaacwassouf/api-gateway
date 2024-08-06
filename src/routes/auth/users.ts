@@ -98,15 +98,12 @@ router.post(
           // set the error in the locals
           res.locals.callError = err;
         } else {
-          const token = response.getToken();
-          if (token) {
-            res.cookie('accessToken', response.getToken(), {
-              httpOnly: true,
-              path: '/',
-              sameSite: 'lax',
-            });
+          const accesstToken = response.getToken();
+          if (accesstToken) {
+            res.json({ accesstToken });
+          } else {
+            res.json({ message: response.getMessage() });
           }
-          res.json({ message: response.getMessage() });
 
           // set the response in the locals
           res.locals.callResponse = response;
