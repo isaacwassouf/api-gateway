@@ -35,10 +35,23 @@ export const ensureAuthenticated = (
   next: NextFunction,
 ) => {
   // check if the jwt access token is present and valid
-  const accessToken = req.cookies.accessToken;
+  let accessToken = req.cookies.accessToken;
+  // check if the jwt is in the authorization header
 
   if (!accessToken) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    // check if the jwt is in the authorization header
+    const authorization = req.headers.authorization;
+    if (!authorization) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const [bearer, token] = authorization.split(' ');
+
+    if (bearer !== 'Bearer') {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    accessToken = token;
   }
 
   try {

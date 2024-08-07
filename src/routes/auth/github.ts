@@ -24,9 +24,9 @@ router.get('/login', (_: Request, res: Response) => {
   );
 });
 
-router.get('/callback', async (req: Request, res: Response) => {
+router.post('/callback', async (req: Request, res: Response) => {
   // get the code from the request query
-  const code = req.query.code;
+  const code = req.body.code;
 
   try {
     // exchange the code for the access and ID tokens
@@ -75,8 +75,8 @@ router.get('/callback', async (req: Request, res: Response) => {
         if (err) {
           return res.status(500).json({ error: err.message });
         }
-        res.cookie('token', response.getToken(), { httpOnly: false });
-        res.redirect(process.env.CLIENT_REDIRECT_AFTER_LOGIN as string);
+
+        res.json({ token: response.getToken() });
       },
     );
   } catch (err) {

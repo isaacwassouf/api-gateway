@@ -5,7 +5,7 @@ import jwt, {
   type SigningKeyCallback,
 } from 'jsonwebtoken';
 import { AuthProviderCredentials } from '../types/auth';
-import { getGitHubCredentials } from './services';
+import { getGitHubCredentials, getGoogleCredentials } from './services';
 
 export interface TokenResponse {
   access_token: string;
@@ -83,19 +83,24 @@ export const exchangeCodeWithTokens = async (
 ): Promise<TokenResponse> => {
   // discover the google token endpoint
   const googleTokenEndpoint = 'https://oauth2.googleapis.com/token';
+
+  const credentials: AuthProviderCredentials = await getGoogleCredentials();
+
+  console.log('credentials', credentials);
+
   // prepare the request body data to suite application/x-www-form-urlencoded
   const requestBody = new URLSearchParams();
   // append the required data
   requestBody.append('code', code);
-  requestBody.append(
-    'client_id',
-    '879077169026-c59e4euiha84cjgbav67nl8fq29nbjs4.apps.googleusercontent.com',
-  );
-  requestBody.append('client_secret', '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');
-  requestBody.append(
-    'redirect_uri',
-    'http://localhost:5173/api/auth/google/callback',
-  );
+  requestBody.append('client_id', credentials.clientId);
+  requestBody.append('client_secret', credentials.clientSecret);
+
+  const googleRedirectURL = process.env.GOOGLE_REDIRECT_URI;
+  if (!googleRedirectURL) {
+    throw new Error('Google redirect URL is not set');
+  }
+
+  requestBody.append('redirect_uri', googleRedirectURL);
   requestBody.append('grant_type', 'authorization_code');
 
   const tokenRequest = await fetch(googleTokenEndpoint.toString(), {
@@ -107,6 +112,7 @@ export const exchangeCodeWithTokens = async (
   });
 
   if (!tokenRequest.ok) {
+    console.log('tokenRequest', tokenRequest);
     throw new Error('Failed to exchange code with tokens');
   }
 
@@ -129,14 +135,11 @@ export const exchangeGitHubCodeWithTokens = async (
   requestBody.append('client_id', credentials.clientId);
   requestBody.append('client_secret', credentials.clientSecret);
 
-  const apiGatewayURL = process.env.API_GATEWAY_URL;
-  if (!apiGatewayURL) {
-    throw new Error('API_GATEWAY_URL is not set');
+  const githubRedirectURL = process.env.GITHUB_REDIRECT_URI;
+  if (!githubRedirectURL) {
+    throw new Error('GitHub redirect URL is not set');
   }
-  requestBody.append(
-    'redirect_uri',
-    `${apiGatewayURL}/api/auth/github/callback`,
-  );
+  requestBody.append('redirect_uri', githubRedirectURL);
 
   const tokenRequest = await fetch(githubTokenEndpoint.toString(), {
     method: 'POST',

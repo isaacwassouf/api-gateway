@@ -25,34 +25,44 @@ router.get('/login', (req: Request, res: Response) => {
   );
 });
 
-router.get('/callback', async (req: Request, res: Response) => {
+router.post('/callback', async (req: Request, res: Response) => {
   // get the code from the request query
-  const code = req.query.code;
+  const code = req.body.code;
 
-  // exchange the code for the access and ID tokens
-  const tokenResponse: TokenResponse = await exchangeCodeWithTokens(
-    code as string,
-  );
+  try {
+    // exchange the code for the access and ID tokens
+    const tokenResponse: TokenResponse = await exchangeCodeWithTokens(
+      code as string,
+    );
 
-  // verify the ID token
-  const payload: JwtPayload = await verifyIDToken(tokenResponse.id_token);
+    console.log('tokenResponse', tokenResponse);
 
-  // create a new GoogleLoginRequest message
-  const message: GoogleLoginRequest = new GoogleLoginRequest();
-  message.setName(payload.name);
-  message.setEmail(payload.email);
-  message.setIdentifier(payload.sub as string);
+    // verify the ID token
+    const payload: JwtPayload = await verifyIDToken(tokenResponse.id_token);
 
-  // handle the login request
-  UserManagementClient.getInstance().handleGoogleLogin(
-    message,
-    (err, response) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
+    console.log('payload', payload);
 
-      res.cookie('token', response.getToken(), { httpOnly: false });
-      res.redirect(process.env.CLIENT_REDIRECT_AFTER_LOGIN as string);
-    },
-  );
+    // create a new GoogleLoginRequest message
+    const message: GoogleLoginRequest = new GoogleLoginRequest();
+    message.setName(payload.name);
+    message.setEmail(payload.email);
+    message.setIdentifier(payload.sub as string);
+
+    // handle the login request
+    UserManagementClient.getInstance().handleGoogleLogin(
+      message,
+      (err, response) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+
+        res.json({ token: response.getToken() });
+      },
+    );
+  } catch (err) {
+    console.log('err', err);
+    res
+      .status(500)
+      .json({ error: 'error while processing google OpenID Connect request' });
+  }
 });

@@ -45,25 +45,18 @@ server.use((req, res, next) => {
 
 // use the cors middleware
 const whitelist = [process.env.DASHBOARD_BASE_URL, process.env.CLIENT_BASE_URL];
-const execludedRoutes = [
-  '/api/auth/github/callback',
-  '/api/auth/google/callback',
-];
 
 server.use(
-  execludeRoutes(
-    execludedRoutes,
-    cors({
-      origin: function(origin, callback) {
-        if (whitelist.indexOf(origin) !== -1) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
-      credentials: true,
-    }),
-  ),
+  cors({
+    origin: function(origin, callback) {
+      if (whitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  }),
 );
 
 // use the router
