@@ -38,6 +38,7 @@ router.get(
               name: provider.getName(),
               active: provider.getActive(),
               clientId: provider.getClientId(),
+              redirectURI: provider.getRedirectUri(),
             });
           });
 
@@ -123,7 +124,7 @@ router.patch(
   '/:id/credentials',
   validateData(setAuthProviderCredentialsSchema),
   async (req: Request, res: Response, next: NextFunction) => {
-    const { clientId, clientSecret } = req.body;
+    const { clientId, clientSecret, redirectURI } = req.body;
 
     const id = req.params.id;
 
@@ -135,7 +136,8 @@ router.patch(
       new SetAuthProviderCredentialsRequest()
         .setAuthProviderId(parseInt(id))
         .setClientId(clientId)
-        .setClientSecret(clientSecret),
+        .setClientSecret(clientSecret)
+        .setRedirectUri(redirectURI),
       (error, response) => {
         if (error) {
           res.status(500).json({ error: error.message });

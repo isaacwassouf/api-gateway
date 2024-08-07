@@ -15,4 +15,5 @@ export const registerSchema = Joi.object({
 export const setAuthProviderCredentialsSchema = Joi.object({
   clientId: Joi.string().required(),
   clientSecret: Joi.string().required(),
+  redirectURI: Joi.string().required(),
 });

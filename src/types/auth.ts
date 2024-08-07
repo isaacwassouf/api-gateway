@@ -3,6 +3,7 @@ export interface AuthProvider {
   name: string;
   active: boolean;
   clientId: string;
+  redirectURI: string;
 }
 
 export interface AuthProvidersList {
@@ -46,4 +47,5 @@ export interface GitHubEmailResponse {
 export interface AuthProviderCredentials {
   clientId: string;
   clientSecret: string;
+  redirectURI: string;
 }

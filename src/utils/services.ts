@@ -23,6 +23,7 @@ export const getGitHubCredentials =
           const credentials: AuthProviderCredentials = {
             clientId: response.getClientId(),
             clientSecret: response.getClientSecret(),
+            redirectURI: response.getRedirectUri(),
           };
 
           resolve(credentials);
@@ -49,6 +50,7 @@ export const getGoogleCredentials =
           const credentials: AuthProviderCredentials = {
             clientId: response.getClientId(),
             clientSecret: response.getClientSecret(),
+            redirectURI: response.getRedirectUri(),
           };
 
           resolve(credentials);

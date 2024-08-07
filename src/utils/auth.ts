@@ -86,21 +86,13 @@ export const exchangeCodeWithTokens = async (
 
   const credentials: AuthProviderCredentials = await getGoogleCredentials();
 
-  console.log('credentials', credentials);
-
   // prepare the request body data to suite application/x-www-form-urlencoded
   const requestBody = new URLSearchParams();
   // append the required data
   requestBody.append('code', code);
   requestBody.append('client_id', credentials.clientId);
   requestBody.append('client_secret', credentials.clientSecret);
-
-  const googleRedirectURL = process.env.GOOGLE_REDIRECT_URI;
-  if (!googleRedirectURL) {
-    throw new Error('Google redirect URL is not set');
-  }
-
-  requestBody.append('redirect_uri', googleRedirectURL);
+  requestBody.append('redirect_uri', credentials.redirectURI);
   requestBody.append('grant_type', 'authorization_code');
 
   const tokenRequest = await fetch(googleTokenEndpoint.toString(), {
@@ -134,12 +126,7 @@ export const exchangeGitHubCodeWithTokens = async (
   requestBody.append('code', code);
   requestBody.append('client_id', credentials.clientId);
   requestBody.append('client_secret', credentials.clientSecret);
-
-  const githubRedirectURL = process.env.GITHUB_REDIRECT_URI;
-  if (!githubRedirectURL) {
-    throw new Error('GitHub redirect URL is not set');
-  }
-  requestBody.append('redirect_uri', githubRedirectURL);
+  requestBody.append('redirect_uri', credentials.redirectURI);
 
   const tokenRequest = await fetch(githubTokenEndpoint.toString(), {
     method: 'POST',
