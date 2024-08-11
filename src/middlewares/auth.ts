@@ -10,7 +10,9 @@ export const ensureAdminAuthenticated = (
   const accessToken = req.cookies.accessToken;
 
   if (!accessToken) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return res
+      .status(401)
+      .json({ error: 'Unauthorized: accessToken not present' });
   }
 
   try {
@@ -25,7 +27,10 @@ export const ensureAdminAuthenticated = (
 
     return res.status(401).json({ error: 'Unauthorized' });
   } catch (err) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    console.error(err);
+    return res
+      .status(401)
+      .json({ error: 'Unauthorized: error while decoding accessToken' });
   }
 };
 
