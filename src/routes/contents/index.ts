@@ -14,19 +14,31 @@ import { ensureAuthenticated } from '../../middlewares/auth';
 // Create a new router
 export const router = express.Router();
 
-router.get(
+router.post(
   '/tables/:tableName',
   ensureAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
     const creatorId = res.locals?.user?.id ?? 0;
+    const page = req.body.page ?? 1;
+    const perPage = req.body.perPage ?? 10;
+    const filters: Map<string, any> = req.body?.filters ?? new Map();
+
+    const grpcRequest = new ListContentRequest();
+    grpcRequest.setTableName(tableName);
+    grpcRequest.setCreatorId(creatorId);
+    grpcRequest.setPage(page);
+    grpcRequest.setPerPage(perPage);
+
+    // iterate over the body and set the content
+    for (const [key, value] of Object.entries(filters)) {
+      //convert the value to base64 toString
+      const encodedValue = btoa(value.toString());
+      grpcRequest.getFiltersMap().set(key, encodedValue);
+    }
 
     ContentManagementClient.getInstance().listContent(
-      new ListContentRequest()
-        .setTableName(tableName)
-        .setCreatorId(creatorId)
-        .setPage(1)
-        .setPerPage(10),
+      grpcRequest,
       (error, response) => {
         if (error) {
           res.status(500).json({ error: error.message });
@@ -40,7 +52,7 @@ router.get(
             });
 
           res.json({
-            entities: entitiesList,
+            data: entitiesList,
             page: response.getPage(),
             perPage: response.getPerPage(),
             totalPages: response.getTotalPages(),
@@ -77,11 +89,13 @@ router.get(
           // set the error in the locals
           res.locals.callError = error;
         } else {
-          const entity = JSON.parse(
-            Buffer.from(response.getContent_asB64()).toString(),
-          );
+          // decode the base64 response
+          const decoded = atob(response.getContent_asB64().toString());
 
-          res.json({ entity });
+          // parse the JSON
+          const jsonData = JSON.parse(decoded);
+
+          res.json({ data: jsonData });
 
           // set the response in the locals
           res.locals.callResponse = response;

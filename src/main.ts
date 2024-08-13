@@ -9,7 +9,7 @@ if (nodeEnv === 'development') {
 import express, { Express } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import { execludeRoutes } from './middlewares';
+// import { execludeRoutes } from './middlewares';
 
 // import the router from Google.ts
 import { router as authRouter } from './routes/auth';
