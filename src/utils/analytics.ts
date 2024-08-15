@@ -44,7 +44,6 @@ export const createLogEntry = (request: Request): LogEntry => {
   const metadata = {
     requestType: request.method,
     endpoint: request.originalUrl,
-    responseMessage: 'Listed tables',
     ip:
       request.headers?.['x-forwarded-for'] ||
       request?.socket?.remoteAddress ||

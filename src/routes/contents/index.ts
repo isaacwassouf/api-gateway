@@ -19,16 +19,20 @@ router.post(
   ensureAuthenticated,
   async (req: Request, res: Response, next: NextFunction) => {
     const tableName = req.params.tableName;
-    const creatorId = res.locals?.user?.id ?? 0;
     const page = req.body.page ?? 1;
     const perPage = req.body.perPage ?? 10;
     const filters: Map<string, any> = req.body?.filters ?? new Map();
 
     const grpcRequest = new ListContentRequest();
     grpcRequest.setTableName(tableName);
-    grpcRequest.setCreatorId(creatorId);
     grpcRequest.setPage(page);
     grpcRequest.setPerPage(perPage);
+
+    if (res.locals?.user?.is_admin) {
+      grpcRequest.setCreatorId(0);
+    } else {
+      grpcRequest.setCreatorId(res.locals?.user?.id ?? 0);
+    }
 
     // iterate over the body and set the content
     for (const [key, value] of Object.entries(filters)) {
@@ -136,7 +140,7 @@ router.post(
 
           // set the response in the locals
           res.locals.callResponse = response;
-          res.locals.defaultMessage = 'Table data listed successfully';
+          res.locals.defaultMessage = 'Content created successfully';
         }
         next();
       },
@@ -175,7 +179,7 @@ router.put(
 
           // set the response in the locals
           res.locals.callResponse = response;
-          res.locals.defaultMessage = 'Table data listed successfully';
+          res.locals.defaultMessage = 'Entity updated successfully';
         }
         next();
       },
@@ -209,7 +213,7 @@ router.delete(
 
           // set the response in the locals
           res.locals.callResponse = response;
-          res.locals.defaultMessage = 'Table data listed successfully';
+          res.locals.defaultMessage = 'Entity deleted successfully';
         }
         next();
       },
