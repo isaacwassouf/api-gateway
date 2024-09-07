@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { verifyTokenRevocation } from '../utils/services';
 
 export const ensureAdminAuthenticated = (
   req: Request,
@@ -34,7 +35,7 @@ export const ensureAdminAuthenticated = (
   }
 };
 
-export const ensureAuthenticated = (
+export const ensureAuthenticated = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -65,8 +66,18 @@ export const ensureAuthenticated = (
       process.env.JWT_SECRET as string,
     ) as JwtPayload;
 
+    const isRevoked = await verifyTokenRevocation(
+      decoded.user.id as number,
+      decoded.jti || '',
+    );
+
+    if (isRevoked.isRevoked) {
+      return res.status(401).json({ error: 'Token has been revoked' });
+    }
+
     // add the user to the request object
     res.locals.user = decoded.user;
+    res.locals.jti = decoded.jti;
 
     return next();
   } catch (err) {

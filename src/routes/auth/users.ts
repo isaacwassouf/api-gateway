@@ -5,6 +5,7 @@ import { UserManagementClient } from '../../services/users';
 import {
   ConfirmPasswordResetRequest,
   LoginRequest,
+  LogoutRequest,
   RegisterRequest,
   RequestEmailVerificationRequest,
   RequestPasswordResetRequest,
@@ -12,7 +13,10 @@ import {
   VerifyEmailRequest,
 } from '../../protobufs/users-management-service/users-management_pb';
 import { User } from '../../types/auth';
-import { ensureAuthenticated } from '../../middlewares/auth';
+import {
+  ensureAdminAuthenticated,
+  ensureAuthenticated,
+} from '../../middlewares/auth';
 import { logger } from '../../middlewares';
 
 // Create a new router
@@ -20,7 +24,7 @@ export const router = express.Router();
 
 router.get(
   '/',
-  ensureAuthenticated,
+  ensureAdminAuthenticated,
   (req: Request, res: Response, next: NextFunction) => {
     const call = UserManagementClient.getInstance().listUsers(new Empty());
     // Create an array to store the users
@@ -108,6 +112,36 @@ router.post(
           // set the response in the locals
           res.locals.callResponse = response;
           res.locals.defaultMessage = 'Login request successful.';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
+router.post(
+  '/logout',
+  ensureAuthenticated,
+  (_: Request, res: Response, next: NextFunction) => {
+    const gRPCRequest = new LogoutRequest();
+    gRPCRequest.setJti(res.locals.jti || '');
+    gRPCRequest.setUserId(res.locals.user?.id || 0);
+
+    UserManagementClient.getInstance().logoutUser(
+      gRPCRequest,
+      (err, response) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+
+          // set the error in the locals
+          res.locals.callError = err;
+        } else {
+          res.json({ message: "You've been logged out." });
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'Logout request successful.';
         }
 
         next();

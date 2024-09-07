@@ -13,6 +13,7 @@ declare global {
         email: string;
       }
       | undefined;
+      jti: string | undefined;
     }
   }
 }

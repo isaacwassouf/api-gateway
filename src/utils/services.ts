@@ -1,6 +1,7 @@
 import {
   AuthProviderName,
   GetAuthProviderCredentialsRequest,
+  VerifyTokenRevoationRequest,
 } from '../protobufs/users-management-service/users-management_pb';
 import { UserManagementClient } from '../services/users';
 import { AuthProviderCredentials } from '../types/auth';
@@ -58,3 +59,25 @@ export const getGoogleCredentials =
       );
     });
   };
+
+export const verifyTokenRevocation = async (
+  userID: number,
+  jti: string,
+): Promise<{ isRevoked: boolean }> => {
+  const grpcRequest = new VerifyTokenRevoationRequest();
+  grpcRequest.setUserId(userID);
+  grpcRequest.setJti(jti);
+
+  return new Promise((resolve, reject) => {
+    UserManagementClient.getInstance().verifyTokenRevoation(
+      grpcRequest,
+      (err, response) => {
+        if (err) {
+          reject(err);
+        }
+
+        resolve({ isRevoked: response.getIsRevoked() });
+      },
+    );
+  });
+};

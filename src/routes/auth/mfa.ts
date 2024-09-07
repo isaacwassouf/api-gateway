@@ -9,6 +9,33 @@ import { ConfirmMFARequest } from '../../protobufs/users-management-service/user
 // Create a new router
 export const router = express.Router();
 
+router.get(
+  '/',
+  ensureAdminAuthenticated,
+  async (_: Request, res: Response, next: NextFunction) => {
+    UserManagementClient.getInstance().getMFA(
+      new Empty(),
+      (error, response) => {
+        if (error) {
+          res.status(500).json({ error: error.message });
+
+          // set the error in the locals
+          res.locals.callError = error;
+        } else {
+          res.json({ enabled: response.getEnabled() });
+
+          // set the response in the locals
+          res.locals.callResponse = response;
+          res.locals.defaultMessage = 'MFA status fetched successfully';
+        }
+
+        next();
+      },
+    );
+  },
+  logger,
+);
+
 router.patch(
   '/toggle',
   ensureAdminAuthenticated,
